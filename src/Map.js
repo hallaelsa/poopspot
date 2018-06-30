@@ -17,15 +17,8 @@ export default class Map extends React.Component {
         latitude: 59.925453,
         longitude: 10.752839
       },
-      image: require('../img/poopXS.png')
-    },
-    {
-      title: 'poops2',
-      coordinates: {
-        latitude: 59.947459,
-        longitude: 10.624138
-      },
-      image: require('../img/poopBsmall.png')
+      image: require('../img/poopXS.png'),
+      count: 1,
     }],
     onPressLocation: '',
   };
@@ -44,32 +37,34 @@ export default class Map extends React.Component {
 
     let location = await Location.getCurrentPositionAsync({});
     this.setState({ locationResult: JSON.stringify(location), currentLocation: location });
-    this.setState({ mapRegion: { latitude: location.coords.latitude, longitude: location.coords.longitude, latitudeDelta: 0.0102, longitudeDelta: 0.0046 }});
-    
+    this.setState({ mapRegion: { latitude: location.coords.latitude, longitude: location.coords.longitude, latitudeDelta: 0.0102, longitudeDelta: 0.0046 } });
+
   };
 
   _onLongPress(data) {
     const coordinate = data.nativeEvent.coordinate;
     //data.nativeEvent.coordinate.latitude
-    this.setState({ onPressLocation: {coords: {latitude: coordinate.latitude, longitude: coordinate.longitude} }});
+    this.setState({ onPressLocation: { coords: { latitude: coordinate.latitude, longitude: coordinate.longitude } } });
 
   }
 
   _clearMarker() {
-    this.setState({ onPressLocation: {coords: null }});
+    this.setState({ onPressLocation: { coords: null } });
   }
 
-  _onRegionChangeComplete(region){
-    this.setState({mapRegion: region})
+  _onRegionChangeComplete(region) {
+    this.setState({ mapRegion: region })
   }
 
-  _addPoop(location){
+  _addPoop(location) {
     const timeStamp = new Date();
     const markers = this.state.markers;
-    const marker = { title: timeStamp.toString(), coordinates: { 
-      latitude: location.nativeEvent.coordinate.latitude,
-      longitude: location.nativeEvent.coordinate.longitude
-    }};
+    const marker = {
+      title: timeStamp.toString(), coordinates: {
+        latitude: location.nativeEvent.coordinate.latitude,
+        longitude: location.nativeEvent.coordinate.longitude
+      }
+    };
     markers.push(marker)
     this.setState({ markers: markers });
   }
@@ -82,84 +77,97 @@ export default class Map extends React.Component {
     let image = require('../img/poopXS.png')
     let counter = 1;
 
-    if(this.state.onPressLocation) {
-        latitude = this.state.onPressLocation.coords.latitude,
-        longitude = this.state.onPressLocation.coords.longitude 
+    if (this.state.onPressLocation) {
+      latitude = this.state.onPressLocation.coords.latitude,
+        longitude = this.state.onPressLocation.coords.longitude
     } else {
-        latitude = this.state.currentLocation.coords.latitude,
+      latitude = this.state.currentLocation.coords.latitude,
         longitude = this.state.currentLocation.coords.longitude
     }
 
-    markers.forEach(function(mark, index, object) {
-      if (Number((latitude).toFixed(5)) == Number((mark.coordinates.latitude).toFixed(5))){
+    markers.forEach(function (mark, index, object) {
+      if (Number((latitude).toFixed(5)) == Number((mark.coordinates.latitude).toFixed(5))) {
+        counter += mark.count;
         object.splice(index, 1);
-        image =  require('../img/poopBsmall.png')
+
+        if (counter > 10) {
+          image = require('../img/poopGolden.png');
+        } else if (counter > 6) {
+          image = require('../img/poopBshiny.png');
+        } else if (counter > 2) {
+          image = require('../img/poopBsmall.png');
+        } else {
+          image = require('../img/poopBm.png');
+        }
       }
     }, this);
-    
-    const marker = { title: timeStamp.toString(), coordinates: { 
-      latitude: latitude,
-      longitude: longitude
-    }, image: image};
+
+    const title = counter + " times. Last date: " + timeStamp;
+    const marker = {
+      title: title, coordinates: {
+        latitude: latitude,
+        longitude: longitude
+      }, image: image, count: counter
+    };
 
     markers.push(marker)
     this.setState({ markers: markers });
   }
 
   render() {
-
     const markerIcon = require('../img/poopXS.png')
     const coords = this.state.currentLocation.coords;
     const mapRegion = this.state.mapRegion;
+    
     return (
       <View style={styles.container}>
         {
-          this.state.locationResult ? 
-        
-        <MapView
-          style={styles.map}
-          initialRegion={ this.state.mapRegion}
-          region={ { latitude: mapRegion.latitude, longitude: mapRegion.longitude, latitudeDelta: mapRegion.latitudeDelta, longitudeDelta: mapRegion.longitudeDelta } }
-          // { latitude: mapRegion.latitude, longitude: mapRegion.longitude, latitudeDelta: mapRegion.latitudeDelta, longitudeDelta: mapRegion.longitudeDelta }
-          onLongPress={(data) => this._onLongPress(data)}
-          onPress={() => this._clearMarker()}
-          onRegionChangeComplete={(region) => this._onRegionChangeComplete(region)}
-        >
-          
-          {this.state.onPressLocation.coords ?
-          <MapView.Marker
-            coordinate={this.state.onPressLocation.coords}
-            title={"Pooped here?"}
-            description={"Add poops!"}
-            pinColor="blue"
-            onCalloutPress={()=> this._addPoop()}
-          /> : 
-          <MapView.Marker
-            coordinate={this.state.currentLocation.coords}
-            title="Current location"
-            description="Add poops?"
-            onCalloutPress={()=> this._addPoop()}
-          />
+          this.state.locationResult ?
+
+            <MapView
+              style={styles.map}
+              initialRegion={this.state.mapRegion}
+              region={{ latitude: mapRegion.latitude, longitude: mapRegion.longitude, latitudeDelta: mapRegion.latitudeDelta, longitudeDelta: mapRegion.longitudeDelta }}
+              // { latitude: mapRegion.latitude, longitude: mapRegion.longitude, latitudeDelta: mapRegion.latitudeDelta, longitudeDelta: mapRegion.longitudeDelta }
+              onLongPress={(data) => this._onLongPress(data)}
+              onPress={() => this._clearMarker()}
+              onRegionChangeComplete={(region) => this._onRegionChangeComplete(region)}
+            >
+
+              {this.state.onPressLocation.coords ?
+                <MapView.Marker
+                  coordinate={this.state.onPressLocation.coords}
+                  title={"Pooped here?"}
+                  description={"Add poops!"}
+                  pinColor="blue"
+                  onCalloutPress={() => this._addPoop()}
+                /> :
+                <MapView.Marker
+                  coordinate={this.state.currentLocation.coords}
+                  title="Current location"
+                  description="Add poops?"
+                  onCalloutPress={() => this._addPoop()}
+                />
+              }
+
+              {this.state.markers ? this.state.markers.map(marker => (
+                <MapView.Marker
+                  key={marker.title}
+                  coordinate={marker.coordinates}
+                  title={marker.title}
+                  image={marker.image}
+                />
+              )) : null}
+
+            </MapView>
+            :
+            <View style={styles.centeredContainer}>
+              <ActivityIndicator size="large" style={styles.activityIndicator} />
+            </View>
+
         }
 
-          {this.state.markers? this.state.markers.map(marker => (
-            <MapView.Marker
-              key={marker.title}
-              coordinate={marker.coordinates}
-              title={marker.title}
-              image={marker.image}
-            />
-          )) : null}
-
-        </MapView>
-        :
-        <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" style={styles.activityIndicator}/>
-        </View>
-        
-        }
-
-        <Button onPress={()=> this._addPoop()} title="Add poops!" style={ styles.btn }/>
+        <Button onPress={() => this._addPoop()} title="Add poops!" style={styles.btn} />
       </View>
     );
   }
