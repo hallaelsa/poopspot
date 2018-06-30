@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, ActivityIndicator, Button } from 'react-native'
 import MapView from 'react-native-maps';
 import { Permissions, Location } from 'expo';
 
+// next: try to cluster poops together so I can show one big one instead of many small ones..
+
 export default class Map extends React.Component {
   state = {
     mapRegion: { latitude: 59.925453, longitude: 10.752839, latitudeDelta: 0.0922, longitudeDelta: 0.0421 },
@@ -122,13 +124,13 @@ export default class Map extends React.Component {
             title={"Pooped here?"}
             description={"Add poops!"}
             pinColor="blue"
-            onCalloutPress={(location)=> this._addPoop(location)}
+            onCalloutPress={()=> this._addPoop()}
           /> : 
           <MapView.Marker
             coordinate={this.state.currentLocation.coords}
             title="Current location"
             description="Add poops?"
-            onCalloutPress={(location)=> this._addPoop(location)}
+            onCalloutPress={()=> this._addPoop()}
           />
         }
 
