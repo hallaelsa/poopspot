@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "PoopSpot",
+    "icon": "./img/poop.png",
+    "version": "1.0.0",
+    "slug": "poopsie",
+    "sdkVersion": "27.0.0",
+    "ios": {
+      "bundleIdentifier": "com.miina.poopspot"
+    }
+  },
+  "android": {
+    "package": "com.miina.poopspot"
+  }
+}
