@@ -44,7 +44,7 @@ export default class Map extends React.Component {
 
     let location = await Location.getCurrentPositionAsync({});
     this.setState({ locationResult: JSON.stringify(location), currentLocation: location });
-    this.setState({ mapRegion: { latitude: location.coords.latitude, longitude: location.coords.longitude, latitudeDelta: 0.0922, longitudeDelta: 0.0421 }});
+    this.setState({ mapRegion: { latitude: location.coords.latitude, longitude: location.coords.longitude, latitudeDelta: 0.0102, longitudeDelta: 0.0046 }});
     
   };
 
@@ -77,9 +77,10 @@ export default class Map extends React.Component {
   _addPoop() {
     const timeStamp = new Date();
     const markers = this.state.markers;
-    let longitude =''
+    let longitude = ''
     let latitude = ''
-    const image = require('../img/poopXS.png')
+    let image = require('../img/poopXS.png')
+    let counter = 1;
 
     if(this.state.onPressLocation) {
         latitude = this.state.onPressLocation.coords.latitude,
@@ -88,6 +89,13 @@ export default class Map extends React.Component {
         latitude = this.state.currentLocation.coords.latitude,
         longitude = this.state.currentLocation.coords.longitude
     }
+
+    markers.forEach(function(mark, index, object) {
+      if (Number((latitude).toFixed(5)) == Number((mark.coordinates.latitude).toFixed(5))){
+        object.splice(index, 1);
+        image =  require('../img/poopBsmall.png')
+      }
+    }, this);
     
     const marker = { title: timeStamp.toString(), coordinates: { 
       latitude: latitude,
