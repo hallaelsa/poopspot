@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, Button } from 'react-native';
 import MapView from 'react-native-maps';
 import { Permissions, Location } from 'expo';
 
@@ -15,6 +15,7 @@ export default class Map extends React.Component {
         latitude: 59.925453,
         longitude: 10.752839
       },
+      image: require('../img/poopXS.png')
     },
     {
       title: 'poops2',
@@ -22,6 +23,7 @@ export default class Map extends React.Component {
         latitude: 59.947459,
         longitude: 10.624138
       },
+      image: require('../img/poopBsmall.png')
     }],
     onPressLocation: '',
   };
@@ -59,12 +61,51 @@ export default class Map extends React.Component {
     this.setState({mapRegion: region})
   }
 
+  _addPoop(location){
+    const timeStamp = new Date();
+    const markers = this.state.markers;
+    const marker = { title: timeStamp.toString(), coordinates: { 
+      latitude: location.nativeEvent.coordinate.latitude,
+      longitude: location.nativeEvent.coordinate.longitude
+    }};
+    markers.push(marker)
+    this.setState({ markers: markers });
+  }
+
+  _addPoop() {
+    const timeStamp = new Date();
+    const markers = this.state.markers;
+    let longitude =''
+    let latitude = ''
+    const image = require('../img/poopXS.png')
+
+    if(this.state.onPressLocation) {
+        latitude = this.state.onPressLocation.coords.latitude,
+        longitude = this.state.onPressLocation.coords.longitude 
+    } else {
+        latitude = this.state.currentLocation.coords.latitude,
+        longitude = this.state.currentLocation.coords.longitude
+    }
+    
+    const marker = { title: timeStamp.toString(), coordinates: { 
+      latitude: latitude,
+      longitude: longitude
+    }, image: image};
+
+    markers.push(marker)
+    this.setState({ markers: markers });
+  }
+
   render() {
-    const markerIcon = require('../img/poopBsmall.png')
+
+    const markerIcon = require('../img/poopXS.png')
     const coords = this.state.currentLocation.coords;
     const mapRegion = this.state.mapRegion;
     return (
       <View style={styles.container}>
+        {
+          this.state.locationResult ? 
+        
         <MapView
           style={styles.map}
           initialRegion={ this.state.mapRegion}
@@ -78,14 +119,16 @@ export default class Map extends React.Component {
           {this.state.onPressLocation.coords ?
           <MapView.Marker
             coordinate={this.state.onPressLocation.coords}
-            title="Pooped here?"
-            description="Add poops!"
+            title={"Pooped here?"}
+            description={"Add poops!"}
             pinColor="blue"
+            onCalloutPress={(location)=> this._addPoop(location)}
           /> : 
           <MapView.Marker
             coordinate={this.state.currentLocation.coords}
             title="Current location"
             description="Add poops?"
+            onCalloutPress={(location)=> this._addPoop(location)}
           />
         }
 
@@ -94,11 +137,19 @@ export default class Map extends React.Component {
               key={marker.title}
               coordinate={marker.coordinates}
               title={marker.title}
-              image={markerIcon}
+              image={marker.image}
             />
           )) : null}
 
         </MapView>
+        :
+        <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" style={styles.activityIndicator}/>
+        </View>
+        
+        }
+
+        <Button onPress={()=> this._addPoop()} title="Add poops!" style={ styles.btn }/>
       </View>
     );
   }
@@ -114,11 +165,25 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   map: {
     position: 'absolute',
     top: 0,
     right: 0,
     left: 0,
     bottom: 0,
-  }
+  },
+  activityIndicator: {
+    color: 'blue',
+    alignSelf: 'center'
+  },
+  btn: {
+    position: 'absolute',
+    padding: 16,
+    marginBottom: 100,
+  },
 });
