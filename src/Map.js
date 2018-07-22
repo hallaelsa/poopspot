@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, Button } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, Button, AsyncStorage } from 'react-native';
 import MapView from 'react-native-maps';
 import { Permissions, Location } from 'expo';
 
@@ -17,7 +17,7 @@ export default class Map extends React.Component {
         latitude: 59.925453,
         longitude: 10.752839
       },
-      image: require('../img/poopXS.png'),
+      image: 'small',
       count: 1,
     }],
     onPressLocation: '',
@@ -25,6 +25,31 @@ export default class Map extends React.Component {
 
   componentDidMount() {
     this._getLocationAsync();
+  }
+
+  async componentWillMount() {
+   this._retrieveData();
+  }
+
+  _storeData = async (markers) => {
+    try {
+      await AsyncStorage.setItem('markers', JSON.stringify(markers));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  _retrieveData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('markers');
+      if (value !== null) {
+        let marks = JSON.parse(value)
+        //alert(marks[1].image)
+        this.setState({ markers: marks });
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   _getLocationAsync = async () => {
@@ -69,15 +94,39 @@ export default class Map extends React.Component {
     this.setState({ markers: markers });
   }
 
+  _getImage(image) {
+    switch(image) {
+      case 'golden': {
+        return require("../img/poopGolden.png");
+      }
+      case 'shiny' : {
+        return require("../img/poopBshiny.png");
+      }
+      case 'big' : {
+        return require("../img/poopBsmall.png");
+      }
+      case 'small' : {
+        return require("../img/poopBm.png");
+      }
+      default : {
+        return require("../img/poopXS.png");
+      }
+    }
+  }
+
   _addPoop() {
     const timeStamp = new Date();
-    const markers = this.state.markers;
+    let markers = []
+
+    if (this.state.markers)
+      markers = this.state.markers;
+
     let longitude = ''
     let latitude = ''
-    let image = require('../img/poopXS.png')
+    let image = 'xsmall';
     let counter = 1;
 
-    if (this.state.onPressLocation) {
+    if (this.state.onPressLocation.coords) {
       latitude = this.state.onPressLocation.coords.latitude,
         longitude = this.state.onPressLocation.coords.longitude
     } else {
@@ -91,13 +140,13 @@ export default class Map extends React.Component {
         object.splice(index, 1);
 
         if (counter > 10) {
-          image = require('../img/poopGolden.png');
+          image = 'golden';
         } else if (counter > 6) {
-          image = require('../img/poopBshiny.png');
+          image = 'shiny';
         } else if (counter > 2) {
-          image = require('../img/poopBsmall.png');
+          image = 'big';
         } else {
-          image = require('../img/poopBm.png');
+          image = 'small';
         }
       }
     }, this);
@@ -111,14 +160,13 @@ export default class Map extends React.Component {
     };
 
     markers.push(marker)
+
+    this._storeData(markers);
     this.setState({ markers: markers });
   }
 
   render() {
-    const markerIcon = require('../img/poopXS.png')
-    const coords = this.state.currentLocation.coords;
     const mapRegion = this.state.mapRegion;
-    
     return (
       <View style={styles.container}>
         {
@@ -150,14 +198,19 @@ export default class Map extends React.Component {
                 />
               }
 
-              {this.state.markers ? this.state.markers.map(marker => (
-                <MapView.Marker
+              {this.state.markers ? this.state.markers.map((marker) => {
+                const img = this._getImage(marker.image);
+
+                return(
+                  <MapView.Marker
                   key={marker.title}
                   coordinate={marker.coordinates}
                   title={marker.title}
-                  image={marker.image}
+                  image={img}
                 />
-              )) : null}
+                )
+                }
+              ) : null}
 
             </MapView>
             :
@@ -196,7 +249,6 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   activityIndicator: {
-    color: 'blue',
     alignSelf: 'center'
   },
   btn: {
