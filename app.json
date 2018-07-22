@@ -9,7 +9,12 @@
       "bundleIdentifier": "com.miina.poopspot"
     },
     "android": {
-      "package": "com.miina.poopspot"
+      "package": "com.miina.poopspot",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBFHxMACiGt5djWQdrDy-lftam3ypYUsxg"
+        }
+      }
     }
   }
 }

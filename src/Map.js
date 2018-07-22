@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ActivityIndicator, Button, AsyncStorage } from 'react-native';
-import MapView from 'react-native-maps';
-import { Permissions, Location } from 'expo';
+//import MapView from 'react-native-maps';
+import { MapView, Permissions, Location  } from 'expo';
 
 // next: try to cluster poops together so I can show one big one instead of many small ones..
 
