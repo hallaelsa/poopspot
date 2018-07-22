@@ -28,7 +28,16 @@ export default class Map extends React.Component {
   }
 
   async componentWillMount() {
-   this._retrieveData();
+    this._retrieveData();
+  }
+
+  _removeData = async () => {
+    try {
+      await AsyncStorage.removeItem('markers');
+      this.setState({ markers: null })
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   _storeData = async (markers) => {
@@ -81,34 +90,21 @@ export default class Map extends React.Component {
     this.setState({ mapRegion: region })
   }
 
-  _addPoop(location) {
-    const timeStamp = new Date();
-    const markers = this.state.markers;
-    const marker = {
-      title: timeStamp.toString(), coordinates: {
-        latitude: location.nativeEvent.coordinate.latitude,
-        longitude: location.nativeEvent.coordinate.longitude
-      }
-    };
-    markers.push(marker)
-    this.setState({ markers: markers });
-  }
-
   _getImage(image) {
-    switch(image) {
+    switch (image) {
       case 'golden': {
         return require("../img/poopGolden.png");
       }
-      case 'shiny' : {
+      case 'shiny': {
         return require("../img/poopBshiny.png");
       }
-      case 'big' : {
+      case 'big': {
         return require("../img/poopBsmall.png");
       }
-      case 'small' : {
+      case 'small': {
         return require("../img/poopBm.png");
       }
-      default : {
+      default: {
         return require("../img/poopXS.png");
       }
     }
@@ -176,7 +172,6 @@ export default class Map extends React.Component {
               style={styles.map}
               initialRegion={this.state.mapRegion}
               region={{ latitude: mapRegion.latitude, longitude: mapRegion.longitude, latitudeDelta: mapRegion.latitudeDelta, longitudeDelta: mapRegion.longitudeDelta }}
-              // { latitude: mapRegion.latitude, longitude: mapRegion.longitude, latitudeDelta: mapRegion.latitudeDelta, longitudeDelta: mapRegion.longitudeDelta }
               onLongPress={(data) => this._onLongPress(data)}
               onPress={() => this._clearMarker()}
               onRegionChangeComplete={(region) => this._onRegionChangeComplete(region)}
@@ -201,15 +196,15 @@ export default class Map extends React.Component {
               {this.state.markers ? this.state.markers.map((marker) => {
                 const img = this._getImage(marker.image);
 
-                return(
+                return (
                   <MapView.Marker
-                  key={marker.title}
-                  coordinate={marker.coordinates}
-                  title={marker.title}
-                  image={img}
-                />
+                    key={marker.title}
+                    coordinate={marker.coordinates}
+                    title={marker.title}
+                    image={img}
+                  />
                 )
-                }
+              }
               ) : null}
 
             </MapView>
@@ -219,8 +214,11 @@ export default class Map extends React.Component {
             </View>
 
         }
-
-        <Button onPress={() => this._addPoop()} title="Add poops!" style={styles.btn} />
+        <View style={styles.btnContainer}>
+          <Button onPress={() => this._addPoop()} title="Add poops!" />
+          <View style={{width: 20}}></View>
+          <Button onPress={() => this._removeData()} title="Delete all!" color="red" />
+        </View>
       </View>
     );
   }
@@ -251,9 +249,7 @@ const styles = StyleSheet.create({
   activityIndicator: {
     alignSelf: 'center'
   },
-  btn: {
-    position: 'absolute',
-    padding: 16,
-    marginBottom: 100,
+  btnContainer: {
+    flexDirection: 'row',
   },
 });
